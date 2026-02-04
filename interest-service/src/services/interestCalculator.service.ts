@@ -4,7 +4,7 @@ import { Transaction, Op } from "sequelize";
 
 // Configure Decimal.js for maximum precision
 Decimal.set({
-  precision: 40, // 40 significant digits
+  precision: 40,
   rounding: Decimal.ROUND_HALF_UP,
 });
 
@@ -102,11 +102,11 @@ export class InterestCalculatorService {
       return {
         accountId: account.id,
         accountNumber: account.accountNumber,
-        openingBalance: balance.toFixed(2),
-        interestRate: account.interestRate,
+        openingBalance: balance.toDecimalPlaces(2).toFixed(2),
+        interestRate: new Decimal(account.interestRate).toFixed(1),
         daysInYear,
-        dailyInterest: dailyInterest.toFixed(2),
-        newBalance: newBalance.toFixed(2),
+        dailyInterest: dailyInterest.toDecimalPlaces(2).toFixed(2),
+        newBalance: newBalance.toDecimalPlaces(2).toFixed(2),
         calculationDate,
       };
     } catch (error) {

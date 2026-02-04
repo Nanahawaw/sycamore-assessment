@@ -66,7 +66,7 @@ describe("InterestCalculatorService", () => {
       // Interest should be calculated precisely
       const expectedInterest = new Decimal("999999999.9999999999")
         .times(0.275)
-        .dividedBy(365);
+        .dividedBy(366);
 
       expect(result.dailyInterest).toBe(expectedInterest.toFixed(2));
     });
@@ -100,8 +100,7 @@ describe("InterestCalculatorService", () => {
         new Date("2024-01-02"),
       );
 
-      // Expected: (10,000 × 0.275) / 365 = 7.53424657534...
-      expect(result.dailyInterest).toBe("7.53");
+      expect(result.dailyInterest).toBe("7.51");
       expect(result.openingBalance).toBe("10000.00");
       expect(result.interestRate).toBe("27.5");
       expect(result.daysInYear).toBe(366); // 2024 is a leap year
@@ -302,7 +301,7 @@ describe("InterestCalculatorService", () => {
   describe("Batch Calculations", () => {
     it("should calculate interest for all active accounts", async () => {
       // Create multiple accounts
-      const accounts = await Promise.all([
+      await Promise.all([
         Account.create({
           userId: uuidv4(),
           accountNumber: "ACC001",
@@ -333,8 +332,6 @@ describe("InterestCalculatorService", () => {
         new Date("2024-01-02"),
       );
 
-      // Should process testAccount + 2 new active accounts = 3 total
-      // Inactive account should be skipped
       expect(results.length).toBe(3);
     });
   });

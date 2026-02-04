@@ -71,7 +71,7 @@ Daily Interest = (Balance × Annual Rate) / Days in Year
 Example:
 Balance: ₦10,000
 Rate: 27.5% = 0.275
-Days: 365
+Days: 366
 Daily Interest = (10,000 × 0.275) / 366 = ₦7.53
 ```
 
@@ -112,7 +112,7 @@ npm test
 
 # Expected Output:
 # Test Suites: 1 passed
-# Tests: 27 passed
+# Tests: 21 passed
 # Coverage: 100%
 ```
 
