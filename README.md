@@ -6,8 +6,8 @@
 
 This repository contains:
 
-2. **Project A: Idempotent Wallet Service** (`wallet-service/`)
-3. **Project B: Interest Accumulator Service** (`interest-service/`)
+1. **Project A: Idempotent Wallet Service** (`wallet-service/`)
+2. **Project B: Interest Accumulator Service** (`interest-service/`)
 
 ---
 

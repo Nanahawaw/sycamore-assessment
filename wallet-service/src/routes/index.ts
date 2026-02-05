@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import { TransferController } from '../controllers/transfer.controller';
+import { Router } from "express";
+import { TransferController } from "../controllers/transfer.controller";
 
 const router = Router();
 const transferController = new TransferController();
@@ -9,9 +9,9 @@ const transferController = new TransferController();
  * Process a wallet transfer with idempotency
  */
 router.post(
-  '/transfer',
+  "/transfer",
   TransferController.transferValidation,
-  transferController.transfer
+  transferController.transfer,
 );
 
 /**
@@ -19,8 +19,8 @@ router.post(
  * Get transaction by idempotency key
  */
 router.get(
-  '/transfer/:idempotencyKey',
-  transferController.getByIdempotencyKey
+  "/transfer/:idempotencyKey",
+  transferController.getByRequestReference,
 );
 
 /**
@@ -28,8 +28,8 @@ router.get(
  * Get transaction by reference number
  */
 router.get(
-  '/transfer/reference/:reference',
-  transferController.getByReference
+  "/transfer/reference/:reference",
+  transferController.getByResponseReference,
 );
 
 export default router;

@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
-import { body, validationResult } from 'express-validator';
-import { TransferService } from '../services/transfer.service';
-import { Logger } from '../utils/logger';
+import { Request, Response, NextFunction } from "express";
+import { body, validationResult } from "express-validator";
+import { TransferService } from "../services/transfer.service";
+import { Logger } from "../utils/logger";
 
 export class TransferController {
   private transferService: TransferService;
@@ -9,37 +9,41 @@ export class TransferController {
 
   constructor() {
     this.transferService = new TransferService();
-    this.logger = new Logger('TransferController');
+    this.logger = new Logger("TransferController");
   }
 
   /**
    * Validation rules for transfer endpoint
    */
   static transferValidation = [
-    body('sourceWalletId')
+    body("payerWalletId")
       .isUUID()
-      .withMessage('Source wallet ID must be a valid UUID'),
-    body('destinationWalletId')
+      .withMessage("Payer wallet ID must be a valid UUID"),
+    body("payeeWalletId")
       .isUUID()
-      .withMessage('Destination wallet ID must be a valid UUID'),
-    body('amount')
+      .withMessage("Payee wallet ID must be a valid UUID"),
+    body("amount")
       .isFloat({ min: 0.01 })
-      .withMessage('Amount must be greater than 0'),
-    body('idempotencyKey')
+      .withMessage("Amount must be greater than 0"),
+    body("requestReference")
       .isString()
       .notEmpty()
-      .withMessage('Idempotency key is required'),
-    body('metadata')
+      .withMessage("Request reference is required"),
+    body("metadata")
       .optional()
       .isObject()
-      .withMessage('Metadata must be an object'),
+      .withMessage("Metadata must be an object"),
   ];
 
   /**
    * POST /api/transfer
    * Process a wallet transfer
    */
-  transfer = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  transfer = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       // Validate request
       const errors = validationResult(req);
@@ -51,16 +55,25 @@ export class TransferController {
         return;
       }
 
-      const { sourceWalletId, destinationWalletId, amount, idempotencyKey, metadata } = req.body;
+      const {
+        payerWalletId,
+        payeeWalletId,
+        amount,
+        requestReference,
+        metadata,
+      } = req.body;
 
-      this.logger.info('Transfer request received', { idempotencyKey, amount });
+      this.logger.info("Transfer request received", {
+        requestReference,
+        amount,
+      });
 
       // Process transfer
       const result = await this.transferService.transfer({
-        sourceWalletId,
-        destinationWalletId,
+        payerWalletId,
+        payeeWalletId,
         amount: parseFloat(amount),
-        idempotencyKey,
+        requestReference,
         metadata,
       });
 
@@ -70,25 +83,32 @@ export class TransferController {
         data: result,
       });
     } catch (error) {
-      this.logger.error('Transfer failed', error);
+      this.logger.error("Transfer failed", error);
       next(error);
     }
   };
 
   /**
-   * GET /api/transfer/:idempotencyKey
-   * Get transaction by idempotency key
+   * GET /api/transfer/:requestReference
+   * Get transaction by request reference
    */
-  getByIdempotencyKey = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getByRequestReference = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
-      const { idempotencyKey } = req.params;
+      const { requestReference } = req.params;
 
-      const transaction = await this.transferService.getTransactionByIdempotencyKey(idempotencyKey);
+      const transaction =
+        await this.transferService.getTransactionByRequestReference(
+          requestReference,
+        );
 
       if (!transaction) {
         res.status(404).json({
           success: false,
-          message: 'Transaction not found',
+          message: "Transaction not found",
         });
         return;
       }
@@ -98,25 +118,32 @@ export class TransferController {
         data: transaction,
       });
     } catch (error) {
-      this.logger.error('Failed to get transaction', error);
+      this.logger.error("Failed to get transaction", error);
       next(error);
     }
   };
 
   /**
-   * GET /api/transfer/reference/:reference
-   * Get transaction by reference
+   * GET /api/transfer/response/:responseReference
+   * Get transaction by response reference
    */
-  getByReference = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getByResponseReference = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
-      const { reference } = req.params;
+      const { responseReference } = req.params;
 
-      const transaction = await this.transferService.getTransactionByReference(reference);
+      const transaction =
+        await this.transferService.getTransactionByResponseReference(
+          responseReference,
+        );
 
       if (!transaction) {
         res.status(404).json({
           success: false,
-          message: 'Transaction not found',
+          message: "Transaction not found",
         });
         return;
       }
@@ -126,7 +153,7 @@ export class TransferController {
         data: transaction,
       });
     } catch (error) {
-      this.logger.error('Failed to get transaction', error);
+      this.logger.error("Failed to get transaction", error);
       next(error);
     }
   };

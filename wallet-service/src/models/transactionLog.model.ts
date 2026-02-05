@@ -1,53 +1,58 @@
-import { Model, DataTypes, Sequelize, Optional } from 'sequelize';
+import { Model, DataTypes, Sequelize, Optional } from "sequelize";
 
 export enum TransactionStatus {
-  PENDING = 'PENDING',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
-  REVERSED = 'REVERSED',
+  PENDING = "PENDING",
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+  REVERSED = "REVERSED",
 }
 
 export enum TransactionType {
-  TRANSFER = 'TRANSFER',
-  DEPOSIT = 'DEPOSIT',
-  WITHDRAWAL = 'WITHDRAWAL',
+  TRANSFER = "TRANSFER",
+  DEPOSIT = "DEPOSIT",
+  WITHDRAWAL = "WITHDRAWAL",
 }
 
 interface TransactionLogAttributes {
   id: string;
-  idempotencyKey: string;
-  sourceWalletId: string;
-  destinationWalletId: string;
+  requestReference: string;
+  payerWalletId: string;
+  payeeWalletId: string;
   amount: number;
   currency: string;
   status: TransactionStatus;
   type: TransactionType;
-  reference: string;
+  responseReference: string;
   metadata?: Record<string, unknown>;
   errorMessage?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-interface TransactionLogCreationAttributes
-  extends Optional<
-    TransactionLogAttributes,
-    'id' | 'status' | 'currency' | 'type' | 'reference' | 'metadata' | 'errorMessage'
-  > {}
+interface TransactionLogCreationAttributes extends Optional<
+  TransactionLogAttributes,
+  | "id"
+  | "status"
+  | "currency"
+  | "type"
+  | "responseReference"
+  | "metadata"
+  | "errorMessage"
+> {}
 
 class TransactionLog
   extends Model<TransactionLogAttributes, TransactionLogCreationAttributes>
   implements TransactionLogAttributes
 {
   public id!: string;
-  public idempotencyKey!: string;
-  public sourceWalletId!: string;
-  public destinationWalletId!: string;
+  public requestReference!: string;
+  public payerWalletId!: string;
+  public payeeWalletId!: string;
   public amount!: number;
   public currency!: string;
   public status!: TransactionStatus;
   public type!: TransactionType;
-  public reference!: string;
+  public responseReference!: string;
   public metadata?: Record<string, unknown>;
   public errorMessage?: string;
   public readonly createdAt!: Date;
@@ -61,21 +66,21 @@ class TransactionLog
           defaultValue: DataTypes.UUIDV4,
           primaryKey: true,
         },
-        idempotencyKey: {
+        requestReference: {
           type: DataTypes.STRING(255),
           allowNull: false,
           unique: true,
-          field: 'idempotency_key',
+          field: "request_reference",
         },
-        sourceWalletId: {
+        payerWalletId: {
           type: DataTypes.UUID,
           allowNull: false,
-          field: 'source_wallet_id',
+          field: "payer_wallet_id",
         },
-        destinationWalletId: {
+        payeeWalletId: {
           type: DataTypes.UUID,
           allowNull: false,
-          field: 'destination_wallet_id',
+          field: "payee_wallet_id",
         },
         amount: {
           type: DataTypes.DECIMAL(20, 2),
@@ -87,7 +92,7 @@ class TransactionLog
         currency: {
           type: DataTypes.STRING(3),
           allowNull: false,
-          defaultValue: 'NGN',
+          defaultValue: "NGN",
         },
         status: {
           type: DataTypes.ENUM(...Object.values(TransactionStatus)),
@@ -99,10 +104,11 @@ class TransactionLog
           allowNull: false,
           defaultValue: TransactionType.TRANSFER,
         },
-        reference: {
+        responseReference: {
           type: DataTypes.STRING(100),
           allowNull: false,
           unique: true,
+          field: "response_reference",
         },
         metadata: {
           type: DataTypes.JSONB,
@@ -111,34 +117,34 @@ class TransactionLog
         errorMessage: {
           type: DataTypes.TEXT,
           allowNull: true,
-          field: 'error_message',
+          field: "error_message",
         },
       },
       {
         sequelize,
-        tableName: 'transaction_logs',
+        tableName: "transaction_logs",
         underscored: true,
         timestamps: true,
         indexes: [
           {
             unique: true,
-            fields: ['idempotency_key'],
+            fields: ["request_reference"],
           },
           {
-            fields: ['source_wallet_id', 'created_at'],
+            fields: ["payer_wallet_id", "created_at"],
           },
           {
-            fields: ['destination_wallet_id', 'created_at'],
+            fields: ["payee_wallet_id", "created_at"],
           },
           {
-            fields: ['status', 'created_at'],
+            fields: ["status", "created_at"],
           },
           {
             unique: true,
-            fields: ['reference'],
+            fields: ["response_reference"],
           },
         ],
-      }
+      },
     );
 
     return TransactionLog;
