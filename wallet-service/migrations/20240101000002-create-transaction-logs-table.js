@@ -8,7 +8,7 @@ module.exports = {
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
       },
-      requestReference: {
+      request_reference: {
         type: Sequelize.STRING(255),
         allowNull: false,
         unique: true,
@@ -77,25 +77,25 @@ module.exports = {
       },
     });
 
-    // Add indexes
-    await queryInterface.addIndex("transaction_logs", ["idempotency_key"], {
+    // Add indexes - updated to match new column names
+    await queryInterface.addIndex("transaction_logs", ["request_reference"], {
       unique: true,
-      name: "transaction_logs_idempotency_key_unique",
+      name: "transaction_logs_request_reference_unique",
     });
 
     await queryInterface.addIndex(
       "transaction_logs",
-      ["source_wallet_id", "created_at"],
+      ["payer_wallet_id", "created_at"],
       {
-        name: "transaction_logs_source_wallet_created_index",
+        name: "transaction_logs_payer_wallet_created_index",
       },
     );
 
     await queryInterface.addIndex(
       "transaction_logs",
-      ["destination_wallet_id", "created_at"],
+      ["payee_wallet_id", "created_at"],
       {
-        name: "transaction_logs_destination_wallet_created_index",
+        name: "transaction_logs_payee_wallet_created_index",
       },
     );
 
@@ -107,9 +107,9 @@ module.exports = {
       },
     );
 
-    await queryInterface.addIndex("transaction_logs", ["reference"], {
+    await queryInterface.addIndex("transaction_logs", ["response_reference"], {
       unique: true,
-      name: "transaction_logs_reference_unique",
+      name: "transaction_logs_response_reference_unique",
     });
 
     // Add check constraint for amount > 0

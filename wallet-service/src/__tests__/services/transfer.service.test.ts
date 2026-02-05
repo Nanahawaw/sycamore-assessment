@@ -3,6 +3,10 @@ import { sequelize, Wallet, TransactionLog } from "../../models";
 import { TransferService } from "../../services/transfer.service";
 import { TransactionStatus } from "../../models/transactionLog.model";
 
+afterAll(async () => {
+  await sequelize.close();
+});
+
 describe("TransferService", () => {
   let transferService: TransferService;
   let payerWallet: Wallet;

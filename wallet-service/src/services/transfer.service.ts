@@ -61,12 +61,34 @@ export class TransferService {
     const lockAcquired = await this.redisService.acquireLock(lockKey, 10000); // 10 sec lock
 
     if (!lockAcquired) {
-      this.logger.warn("Failed to acquire lock", { requestReference });
+      this.logger.warn(
+        "Failed to acquire lock, checking for existing transaction",
+        { requestReference },
+      );
+
+      // Wait a bit and check again for existing transaction created by another process
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const retryTransaction =
+        await this.checkExistingTransaction(requestReference);
+
+      if (retryTransaction) {
+        this.logger.info("Found transaction created by another process", {
+          requestReference,
+          transactionId: retryTransaction.id,
+        });
+        return {
+          transactionId: retryTransaction.id,
+          status: retryTransaction.status,
+          responseReference: retryTransaction.responseReference,
+          message: "Transaction already processed",
+        };
+      }
+
       throw new Error(
         "Another process is handling this transaction. Please retry.",
       );
     }
-
     try {
       // Step 3: Double-check for existing transaction
       const doubleCheckTransaction =
